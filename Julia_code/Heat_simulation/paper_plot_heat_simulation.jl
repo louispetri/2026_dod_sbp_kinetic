@@ -12,7 +12,7 @@ Tmax = 5.0
 
 c_upwind_diss_symm = [1.0, 0.511, 0.337, 0.247, 0.183, 0.148]
 c_central_symm = [1.0, 0.563, 0.365, 0.264, 0.191, 0.150]
-linewidths = [3.5, 2.5, 1.25]
+linewidths = [3.75, 2.5, 1.25]
 
 function lines_discont!(problem, axis, x_d, sol; label = NaN, linestyle = NaN, linewidth = NaN, color = NaN, titlestring = NaN,
                         plot_type = "discont_solid")
@@ -68,7 +68,6 @@ for plot_type in ["discont_solid_connected"]
                 settingstr = "backgr"
             end
             marker_legend_control = true
-            i = 1
             f = Figure(fontsize = 32)
             ax = Axis(f[1,1], xlabel = L"x", ylabel = L"\rho", xlabelsize = 36, ylabelsize = 36,
                 title = titlestring, titlesize = 36, xscale = identity, yscale = ysc)
@@ -116,11 +115,15 @@ for plot_type in ["discont_solid_connected"]
                         end
                     end
                     if plot_type == "cont_dashed"
-                        lines!(ax, x_d, sol, label = flux_pair_str, linestyle = linestyle[ideg], linewidth = linewidths[ideg], color = Makie.wong_colors()[i])
+                        lines!(ax, x_d, sol, label = flux_pair_str, linestyle = linestyle[ideg], linewidth = linewidths[ideg], color = Makie.wong_colors()[ideg])
                     elseif plot_type in ["discont_dashed", "discont_solid", "discont_solid_connected", "discont_dashed_connected"]
-                        lines_discont!(problem, ax, x_d, sol, label = flux_pair_str, linestyle = linestyle[ideg], linewidth = linewidths[ideg], color = Makie.wong_colors()[i], titlestring = titlestring, plot_type = plot_type)
+                        if ideg == 2
+                            col = :orange
+                        else
+                            col = Makie.wong_colors()[ideg]
+                        end
+                        lines_discont!(problem, ax, x_d, sol, label = flux_pair_str, linestyle = linestyle[ideg], linewidth = linewidths[ideg], color = col, titlestring = titlestring, plot_type = plot_type)
                     end
-                    i = i+1
                 end
             end
             #axislegend(ax, position = :rt, fontsize = 5)
