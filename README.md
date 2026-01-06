@@ -59,8 +59,8 @@ Once you have installed Julia, you can clone this repository, enter this directo
 `julia` with the following steps
 
 ```shell
-git clone https://github.com/louispetri/2025_dod_sbp_kinetic.git
-cd 2025_dod_sbp_kinetic
+git clone https://github.com/louispetri/2026_dod_sbp_kinetic.git
+cd 2026_dod_sbp_kinetic
 cd Julia_code
 julia --project=.
 ```
