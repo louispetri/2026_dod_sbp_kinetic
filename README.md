@@ -27,7 +27,25 @@ repository as
 
 ## Abstract
 
-ToDo
+We employ the summation-by-parts (SBP) framework to extend
+the recent domain-of-dependence (DoD) stabilization for cut cells to linear
+kinetic models in diffusion scaling. Numerical methods for these models are
+challenged by increased stiffness for small scaling parameters and the
+necessity of asymptotics preservation regarding a parabolic limit equation.
+As a prototype model, we consider the telegraph equation in one spatial
+dimension subject to periodic boundary conditions with an asymptotic limit
+given by the linear heat equation.
+We provide a general semidiscrete stability result for this model when
+spatially discretized by arbitrary periodic (upwind) SBP operators and
+formally prove that the fully discrete scheme is asymptotic preserving.
+Moreover, we prove that DoD with central numerical
+fluxes leads to periodic SBP operators. Furthermore, we show that adapting
+the upwind DoD scheme yields periodic upwind SBP operators. Consequently,
+DoD stabilization possess the desired properties considered in the first part
+of this work and thus leads to a stable and asymptotic preserving scheme for
+the telegraph equation. We back our theoretical results with numerical
+simulations and demonstrate the applicability of this cut-cell
+stabilization for implicit time integration in the heat equation limit.
 
 
 ## Numerical experiments
@@ -41,8 +59,8 @@ Once you have installed Julia, you can clone this repository, enter this directo
 `julia` with the following steps
 
 ```shell
-git clone https://github.com/louispetri/2025_dod_sbp_kinetic.git
-cd 2025_dod_sbp_kinetic
+git clone https://github.com/louispetri/2026_dod_sbp_kinetic.git
+cd 2026_dod_sbp_kinetic
 cd Julia_code
 julia --project=.
 ```
