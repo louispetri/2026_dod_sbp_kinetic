@@ -1,11 +1,8 @@
 # Domain-of-dependence-stabilized cut-cell discretizations of linear kinetic models with summation-by-parts properties
 
 # ToDo
-- Ist Titel final?
-- Korrektheit der finalen Shell/Julia commands überprüfen
 - DOI
 - References
-- Abstract
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/licenses/MIT)
 [![DOI](ToDo)
