@@ -74,12 +74,11 @@ All the figures are now ready and available in the respective folders/subfolders
 
 ## Authors
 
-- Gunnar Birke (gunnar.birke@uni-muenster.de)
-- [Christian Engwer](https://www.uni-muenster.de/FB10srvi/persdb/MM-member.php?id=724) (christian.engwer@uni-muenster.de)
-- [Sigrun Ortleb](https://acom.rwth-aachen.de/the-lab/submenu/team-people/name:sigrun_ortleb) (sigrun.ortleb@rwth-aachen.de)
-- Louis Petri (lpetri01@uni-mainz.de)
-- [Hendrik Ranocha](https://ranocha.de) (hendrik.ranocha@uni-mainz.de)
-
+- Gunnar Birke
+- [Christian Engwer](https://www.uni-muenster.de/FB10srvi/persdb/MM-member.php?id=724)
+- [Sigrun Ortleb](https://acom.rwth-aachen.de/the-lab/submenu/team-people/name:sigrun_ortleb)
+- Louis Petri
+- [Hendrik Ranocha](https://ranocha.de)
 
 ## License
 
