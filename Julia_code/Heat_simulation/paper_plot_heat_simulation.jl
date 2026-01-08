@@ -12,7 +12,8 @@ Tmax = 5.0
 
 c_upwind_diss_symm = [1.0, 0.511, 0.337, 0.247, 0.183, 0.148]
 c_central_symm = [1.0, 0.563, 0.365, 0.264, 0.191, 0.150]
-linewidths = [3.75, 2.5, 1.25]
+linewidths = [3.25, 2.5, 2.5]
+cols = [:red2, :cyan2, :gold]
 
 function lines_discont!(problem, axis, x_d, sol; label = NaN, linestyle = NaN, linewidth = NaN, color = NaN, titlestring = NaN,
                         plot_type = "discont_solid")
@@ -58,12 +59,12 @@ for plot_type in ["discont_solid_connected"]
                     ysc = identity
                     settingstr = "unstabil"
                 else
-                    titlestring = "DoD (stabilized)"
+                    titlestring = "    DoD (stabilized)"
                     ysc = identity
                     settingstr = "stabil"
                 end
             else
-                titlestring = "Background"
+                titlestring = "    Background"
                 ysc = identity
                 settingstr = "backgr"
             end
@@ -77,7 +78,7 @@ for plot_type in ["discont_solid_connected"]
                     if J1_type == "upwind_diss_symm"
                         flux_pair_str = L"(D^-, D^+),\; p=%$(deg)"
                         if plot_type in ["discont_solid", "discont_solid_connected"]
-                            linestyle = [:solid, :solid, :solid]
+                            linestyle = [:solid, :solid, :dash]
                         else
                             linestyle = [:solid, :dashdot, :dash]
                         end
@@ -115,14 +116,14 @@ for plot_type in ["discont_solid_connected"]
                         end
                     end
                     if plot_type == "cont_dashed"
-                        lines!(ax, x_d, sol, label = flux_pair_str, linestyle = linestyle[ideg], linewidth = linewidths[ideg], color = Makie.wong_colors()[ideg])
+                        lines!(ax, x_d, sol, label = flux_pair_str, linestyle = linestyle[ideg], linewidth = linewidths[ideg], color = cols[ideg])
                     elseif plot_type in ["discont_dashed", "discont_solid", "discont_solid_connected", "discont_dashed_connected"]
-                        if ideg == 2
-                            col = :orange
+                        if include_cut_cells == true && do_stabilize == false
+                            lines_discont!(problem, ax, x_d, sol, label = flux_pair_str, linestyle = linestyle[ideg], linewidth = linewidths[ideg], color = cols[ideg], titlestring = titlestring, plot_type = plot_type)
                         else
-                            col = Makie.wong_colors()[ideg]
+                            lines_discont!(problem, ax, x_d, sol * 10^3, label = flux_pair_str, linestyle = linestyle[ideg], linewidth = linewidths[ideg], color = cols[ideg], titlestring = titlestring, plot_type = plot_type)
+                            Label(f[1, 1, Top()], halign = :left, L"\times 10^{-3}", fontsize = 33, height = 45)
                         end
-                        lines_discont!(problem, ax, x_d, sol, label = flux_pair_str, linestyle = linestyle[ideg], linewidth = linewidths[ideg], color = col, titlestring = titlestring, plot_type = plot_type)
                     end
                 end
             end
