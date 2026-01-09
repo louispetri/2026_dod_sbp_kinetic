@@ -1,0 +1,33 @@
+{
+    "license": "MIT",
+    "title": "Reproducibility repository for Domain-of-dependence-stabilized cut-cell discretizations of linear kinetic models with summation-by-parts properties",
+    "upload_type": "software",
+    "creators": [
+        {
+	          "affiliation": "Institute of Mathematics, Johannes Gutenberg University Mainz, Germany",
+            "name": "Louis Petri",
+            "orcid": "0009-0005-5322-3982"
+        },
+        {
+	          "affiliation": "epartment of Mathematics, RWTH Aachen University, Germany",
+            "name": "Sigrun Ortleb",
+            "orcid": "0000-0003-1341-853X"
+        },
+        {
+	          "affiliation": "Applied Mathematics, University of Münster, Germany",
+            "name": "Gunnar Birke",
+            "orcid": "0000-0002-2008-6679"
+        },
+        {
+	          "affiliation": "Applied Mathematics, University of Münster, Germany",
+            "name": "Christian Engwer",
+            "orcid": "0000-0002-6041-8228"
+        },
+        {
+            "affiliation": "Institute of Mathematics, Johannes Gutenberg University Mainz, Germany",
+            "name": "Ranocha, Hendrik",
+            "orcid": "0000-0002-3456-2277"
+        }
+    ],
+    "access_right": "open"
+}
