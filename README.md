@@ -1,15 +1,22 @@
 # Domain-of-dependence-stabilized cut-cell discretizations of linear kinetic models with summation-by-parts properties
 
-# ToDo
-- References
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18196533.svg)](https://doi.org/10.5281/zenodo.18196533)
 
 This repository contains information and code to reproduce the results
 presented in the article
 ```bibtex
-@online{ToDo
+@online{petri2026kinetic,
+  title={Domain-of-dependence-stabilized cut-cell discretizations
+         of linear kinetic models with summation-by-parts properties},
+  author={Petri, Louis and Ortleb, Sigrun and Birke, Gunnar and
+          Engwer, Christian and Ranocha, Hendrik},
+  year={2026},
+  month={01},
+  eprint={2601.05817},
+  eprinttype={arxiv},
+  eprintclass={math.NA},
+  doi={10.48550/arXiv.2601.05817}
 }
 ```
 
