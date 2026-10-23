@@ -79,45 +79,43 @@ function get_exact_solution(setup)
     deg = setup["deg"]
     epsilon = setup["epsilon"]
     T = setup["T"]
-    if setup["bcs"] == "periodic"
-        if eq_type == "wave"
-            u_wave_exact = zeros(T, (deg+1)*2*N, length(t_d));
-            u_wave_exact[1:(deg+1)*N, :] = [1/2*(sin(2*pi*(x-1/epsilon*t))+epsilon*cos(2*pi*(x-1/epsilon*t))+sin(2*pi*(x+1/epsilon*t))-epsilon*cos(2*pi*(x+1/epsilon*t))) for x in x_d, t in t_d];
-            u_wave_exact[(deg+1)*N+1:(deg+1)*2*N, :] = [1/2*(1/epsilon*sin(2*pi*(x-1/epsilon*t))+cos(2*pi*(x-1/epsilon*t))-1/epsilon*sin(2*pi*(x+1/epsilon*t))+cos(2*pi*(x+1/epsilon*t))) for x in x_d, t in t_d];
-            return u_wave_exact
-        elseif eq_type == "wave_symm"
-            u_wave_exact = zeros(T, (deg+1)*2*N, length(t_d));
-            u_wave_exact[1:(deg+1)*N, :] = [1/2*(sin(2*pi*(x-1/epsilon*t))+epsilon*cos(2*pi*(x-1/epsilon*t))+sin(2*pi*(x+1/epsilon*t))-epsilon*cos(2*pi*(x+1/epsilon*t))) for x in x_d, t in t_d];
-            u_wave_exact[(deg+1)*N+1:(deg+1)*2*N, :] = [1/2*epsilon*(1/epsilon*sin(2*pi*(x-1/epsilon*t))+cos(2*pi*(x-1/epsilon*t))-1/epsilon*sin(2*pi*(x+1/epsilon*t))+cos(2*pi*(x+1/epsilon*t))) for x in x_d, t in t_d];
-            return u_wave_exact
-        elseif eq_type in ["telegraph", "telegraph_semistab"]
-            if setup["init_cond"] != "telsin"
-                println("Care: exact solution does not match inital conditions!")
-            end
-            r = -2/(1+sqrt(1-4*epsilon^2))
-            u_tel_exact = zeros(T, (deg+1)*2*N, length(t_d));
-            u_tel_exact[1:(deg+1)*N, :] = [1/r*exp(r*t)*sin(x) for x in x_d, t in t_d];
-            u_tel_exact[(deg+1)*N+1:(deg+1)*2*N, :] = [exp(r*t)*cos(x) for x in x_d, t in t_d];
-            return u_tel_exact
-        elseif eq_type == "telegraph_symm"
-            if setup["init_cond"] != "telsin"
-                println("Care: exact solution does not match inital conditions!")
-            end
-            r = -2/(1+sqrt(1-4*epsilon^2))
-            u_tel_exact = zeros(T, (deg+1)*2*N, length(t_d));
-            u_tel_exact[1:(deg+1)*N, :] = [1/r*exp(r*t)*sin(x) for x in x_d, t in t_d];
-            u_tel_exact[(deg+1)*N+1:(deg+1)*2*N, :] = [epsilon*exp(r*t)*cos(x) for x in x_d, t in t_d];
-            return u_tel_exact
-        elseif eq_type == "heat"
-            r = -1
-            u_tel_exact = zeros(T, (deg+1)*N, length(t_d));
-            u_tel_exact[1:(deg+1)*N, :] = [1/r*exp(r*t)*sin(x) for x in x_d, t in t_d];
-        elseif eq_type == "transport"
-            u_exact = [u0_eval(to_periodic(x-(a*(t)))) for x in x_d, t in t_d]
-            return u_exact
-        else
-            println("wrong eq type")
+    if eq_type == "wave"
+        u_wave_exact = zeros(T, (deg+1)*2*N, length(t_d));
+        u_wave_exact[1:(deg+1)*N, :] = [1/2*(sin(2*pi*(x-1/epsilon*t))+epsilon*cos(2*pi*(x-1/epsilon*t))+sin(2*pi*(x+1/epsilon*t))-epsilon*cos(2*pi*(x+1/epsilon*t))) for x in x_d, t in t_d];
+        u_wave_exact[(deg+1)*N+1:(deg+1)*2*N, :] = [1/2*(1/epsilon*sin(2*pi*(x-1/epsilon*t))+cos(2*pi*(x-1/epsilon*t))-1/epsilon*sin(2*pi*(x+1/epsilon*t))+cos(2*pi*(x+1/epsilon*t))) for x in x_d, t in t_d];
+        return u_wave_exact
+    elseif eq_type == "wave_symm"
+        u_wave_exact = zeros(T, (deg+1)*2*N, length(t_d));
+        u_wave_exact[1:(deg+1)*N, :] = [1/2*(sin(2*pi*(x-1/epsilon*t))+epsilon*cos(2*pi*(x-1/epsilon*t))+sin(2*pi*(x+1/epsilon*t))-epsilon*cos(2*pi*(x+1/epsilon*t))) for x in x_d, t in t_d];
+        u_wave_exact[(deg+1)*N+1:(deg+1)*2*N, :] = [1/2*epsilon*(1/epsilon*sin(2*pi*(x-1/epsilon*t))+cos(2*pi*(x-1/epsilon*t))-1/epsilon*sin(2*pi*(x+1/epsilon*t))+cos(2*pi*(x+1/epsilon*t))) for x in x_d, t in t_d];
+        return u_wave_exact
+    elseif eq_type in ["telegraph", "telegraph_semistab"]
+        if setup["init_cond"] != "telsin"
+            println("Care: exact solution does not match inital conditions!")
         end
+        r = -2/(1+sqrt(1-4*epsilon^2))
+        u_tel_exact = zeros(T, (deg+1)*2*N, length(t_d));
+        u_tel_exact[1:(deg+1)*N, :] = [1/r*exp(r*t)*sin(x) for x in x_d, t in t_d];
+        u_tel_exact[(deg+1)*N+1:(deg+1)*2*N, :] = [exp(r*t)*cos(x) for x in x_d, t in t_d];
+        return u_tel_exact
+    elseif eq_type == "telegraph_symm"
+        if setup["init_cond"] != "telsin"
+            println("Care: exact solution does not match inital conditions!")
+        end
+        r = -2/(1+sqrt(1-4*epsilon^2))
+        u_tel_exact = zeros(T, (deg+1)*2*N, length(t_d));
+        u_tel_exact[1:(deg+1)*N, :] = [1/r*exp(r*t)*sin(x) for x in x_d, t in t_d];
+        u_tel_exact[(deg+1)*N+1:(deg+1)*2*N, :] = [epsilon*exp(r*t)*cos(x) for x in x_d, t in t_d];
+        return u_tel_exact
+    elseif eq_type == "heat"
+        r = -1
+        u_tel_exact = zeros(T, (deg+1)*N, length(t_d));
+        u_tel_exact[1:(deg+1)*N, :] = [1/r*exp(r*t)*sin(x) for x in x_d, t in t_d];
+    elseif eq_type == "transport"
+        u_exact = [u0_eval(to_periodic(x-(a*(t)))) for x in x_d, t in t_d]
+        return u_exact
+    else
+        println("wrong eq type")
     end
 end
 
@@ -125,37 +123,52 @@ function f_RHS(u, t, RHS_mat, setup)
     return RHS_mat * u
 end
 
-function include_cut_cell(setup, cutcell_size, cutcell_pos)
+function include_cut_cell(setup, cutcell_size, cutcell_position)
     T = setup["T"]
     vert = setup["v"]
     create_cutcell = false
+    h = setup["h"]
+    cellnumber = setup["cellnumber"]
     if cutcell_size <=0.5
-        if vert[cutcell_pos+1]-vert[cutcell_pos] > 1/2* setup["h"] && vert[cutcell_pos]-vert[cutcell_pos-1] > 1/2* setup["h"]
-            create_cutcell = true
+        if cutcell_position != 1
+            if vert[cutcell_position+1]-vert[cutcell_position] > 1/2 * h && vert[cutcell_position]-vert[cutcell_position-1] > 1/2 * h
+                create_cutcell = true
+            end
+        else
+            if vert[cutcell_position+1]-vert[cutcell_position] > 1/2 * h
+                create_cutcell = true
+            end
         end
     end
     if cutcell_size >0.5
-        if vert[cutcell_pos+2]-vert[cutcell_pos + 1] > 1/2* setup["h"] && vert[cutcell_pos + 1]-vert[cutcell_pos] > 1/2* setup["h"]
-            create_cutcell = true
+        if cutcell_position != cellnumber
+            if vert[cutcell_position+2]-vert[cutcell_position + 1] > 1/2 * h && vert[cutcell_position + 1]-vert[cutcell_position] > 1/2 * h
+                create_cutcell = true
+            end
+        else
+            if vert[cutcell_position + 1]-vert[cutcell_position] > 1/2 * h
+                create_cutcell = true
+            end
         end
     end
     if create_cutcell
         vert_new = zeros(T, length(vert)+1)
         for i in range(1, length(vert)+1)
-            if i < cutcell_pos
+            if i < cutcell_position
                 vert_new[i] = vert[i] 
-            elseif i == cutcell_pos
+            elseif i == cutcell_position
                 vert_new[i] = vert[i] 
-                vert_new[i+1] = ((1-cutcell_size)*vert[cutcell_pos] + (cutcell_size)*vert[cutcell_pos+1])
-            elseif i > cutcell_pos + 1
+                vert_new[i+1] = ((1-cutcell_size)*vert[cutcell_position] + (cutcell_size)*vert[cutcell_position+1])
+            elseif i > cutcell_position + 1
                 vert_new[i] = vert[i-1]
             end
         end
-        setup["v"] = vert_new
-        setup["cellnumber"] += 1
+        cellnumber += 1
     else
-        println("No new cut-cell created due to its neighbour being already a cut-cell")
+        println("No new cut-cell created due to its neighbour being already a small cut-cell")
     end
+    setup["v"] = vert_new
+    setup["cellnumber"] = cellnumber
     return setup
 end
 
@@ -203,8 +216,7 @@ function DGsemidiscretization_DoD_telegraph(setup, deg, nodes;
     init_cond = setup["init_cond"]
     eq_type = setup["eq_type"]
     epsilon = setup["epsilon"]
-
-    setup["bcs"] = "periodic"
+    bcs = setup["bcs"]
 
     splitRHS = Dict()
     SBP_storage = Dict()
@@ -243,16 +255,22 @@ function DGsemidiscretization_DoD_telegraph(setup, deg, nodes;
     setup["x_d"] = x_d
 
     Sc = zeros(T, xrange, xrange)
+    diagdx = zeros(T, xrange, xrange)
     M = zeros(T, xrange, xrange)
     M_global = zeros(T, xrange, xrange)
     # Inverse of the LHS mass-matrix 
     for i in 1:n_comp*cellnumber
         Sc[(deg+1)*(i-1) + 1:(deg+1)*i, (deg+1)*(i-1) + 1:(deg+1)*i] = diagm(ones(T, deg+1)*invscale(mymod(i, cellnumber)))
+        diagdx[(deg+1)*(i-1) + 1:(deg+1)*i, (deg+1)*(i-1) + 1:(deg+1)*i] = diagm(ones(T, deg+1)*scale(mymod(i, cellnumber)))
         M[(deg+1)*(i-1)+1:(deg+1)*i, (deg+1)*(i-1)+1:(deg+1)*i] = diagm(basis.weights)
         M_global[(deg+1)*(i-1)+1:(deg+1)*i, (deg+1)*(i-1)+1:(deg+1)*i] = diagm(basis.weights) * scale(mymod(i, cellnumber))
     end
     invM_global = Sc*inv(M)
+    invM_precond = inv(M)
+    setup["Sc"] = Sc
+    setup["diagdx"] = diagdx
     setup["invM_global"] = invM_global
+    setup["invM_precond"] = invM_precond
     # Cell boundary extrapolation operator V (for one component) and standard volume Term D'M
     left_interpolation = interpolation_matrix(-1 , basis)
     right_interpolation = interpolation_matrix(1, basis)
@@ -281,14 +299,17 @@ function DGsemidiscretization_DoD_telegraph(setup, deg, nodes;
             SBP_storage["Dplus"] = Dplus
             if a>0
                 RHS_mat = - invM_global * a*Dminus
+                setup["RHS_mat_precond"] = - invM_precond * a*Dminus
             else
                 RHS_mat = - invM_global * a*Dplus
+                setup["RHS_mat_precond"] = - invM_precond * a*Dplus
             end
         end
         if fluxtype == "central"
             D_central = get_D_central(setup)
             SBP_storage["Dc"] = D_central
             RHS_mat = - invM_global * a*D_central
+            setup["RHS_mat_precond"] = - invM_precond * a*D_central
         end
     elseif eq_type == "wave"
         if fluxtype in ["altlr", "altrl"]
@@ -328,8 +349,12 @@ function DGsemidiscretization_DoD_telegraph(setup, deg, nodes;
         elseif fluxtype == "central"
             D_central = get_D_central(setup)
             SBP_storage["Dc"] = D_central
-            ex_RHS_mat[1:comprange, comprange + 1:2*comprange] = -1/epsilon*D_central
-            im_RHS_mat[comprange + 1:2*comprange, 1:comprange] = -1/epsilon*D_central
+            refl_boundary_term = zeros(T, size(D_central))
+            if bcs == "reflecting"
+                refl_boundary_term = D_central + D_central'
+            end
+            ex_RHS_mat[1:comprange, comprange + 1:2*comprange] = -1/epsilon*D_central + 1/epsilon * refl_boundary_term
+            im_RHS_mat[comprange + 1:2*comprange, 1:comprange] = -1/epsilon*D_central 
         end
         ex_RHS_mat = invM_global*ex_RHS_mat
         im_RHS_mat = invM_global*im_RHS_mat
@@ -367,14 +392,19 @@ function DGsemidiscretization_DoD_telegraph(setup, deg, nodes;
                 D_central = get_D_central(setup)
                 SBP_storage["Dc"] = D_central
                 setup["Dc"] = D_central
+                refl_boundary_term = zeros(T, size(D_central))
+                if bcs == "reflecting"
+                    refl_boundary_term = D_central + D_central'
+                end
                 ex_RHS_mat[1:comprange, comprange + 1:2*comprange] = -D_central
-                im_RHS_mat[comprange + 1:2*comprange, 1:comprange] = -1/epsilon^2*D_central
+                im_RHS_mat[comprange + 1:2*comprange, 1:comprange] = -1/epsilon^2*D_central + 1/epsilon^2*refl_boundary_term
                 ex_RHS_mat[comprange + 1:2*comprange, comprange + 1:2*comprange] = 1/epsilon*A
                 im_RHS_mat[comprange + 1:2*comprange, comprange + 1:2*comprange] = -1/epsilon^2*M_source
             end
             ex_RHS_mat = invM_global*ex_RHS_mat
             im_RHS_mat = invM_global*im_RHS_mat
             RHS_mat = ex_RHS_mat + im_RHS_mat
+            setup["RHS_mat_precond"] = invM_precond*ex_RHS_mat + invM_precond*im_RHS_mat
         elseif eq_type == "telegraph_semistab"
             setup_nonstab = copy(setup)
             setup_nonstab["do_stabilize"] = false
@@ -445,14 +475,26 @@ function DGsemidiscretization_DoD_telegraph(setup, deg, nodes;
             SBP_storage["Dplus"] = Dplus
             if fluxtype == "altlr"
                 RHS_mat = invM_global * Dminus * invM_global * Dplus
+                RHS_mat_precond_rho = invM_precond * Dminus
+                RHS_mat_precond_j = invM_precond * Dplus
             elseif fluxtype == "altrl"
                 RHS_mat = invM_global * Dplus * invM_global * Dminus
+                RHS_mat_precond_rho = invM_precond * Dplus
+                RHS_mat_precond_j = invM_precond * Dminus
             end
         elseif fluxtype == "central"
             D_central = get_D_central(setup)
             SBP_storage["Dc"] = D_central
-            RHS_mat = invM_global * D_central * invM_global * D_central
+            refl_boundary_term = zeros(T, size(D_central))
+            if bcs == "reflecting"
+                refl_boundary_term = D_central + D_central'
+            end
+            RHS_mat = invM_global * D_central * invM_global * (D_central - refl_boundary_term)
+            RHS_mat_precond_rho = invM_precond * D_central
+            RHS_mat_precond_j = invM_precond * (D_central - refl_boundary_term)
         end
+        setup["RHS_mat_precond_rho"] = RHS_mat_precond_rho
+        setup["RHS_mat_precond_j"] = RHS_mat_precond_j
     end
 
     setup["ex_RHS_mat"] = ex_RHS_mat
@@ -475,6 +517,9 @@ function DGsemidiscretization_DoD_telegraph(setup, deg, nodes;
             D_ic = get_Dminus(setup, for_bh = false)
         elseif fluxtype == "central"
             D_ic = get_D_central(setup)
+            if bcs == "reflecting"
+                D_ic = -D_ic'
+            end
         end
         if eq_type in ["telegraph", "telegraph_semistab"]
             if init_cond == "telsin"

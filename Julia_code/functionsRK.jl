@@ -24,6 +24,7 @@ function ARS_optimized(setup, RHS_mat, Tableau)
     eq_type = setup["eq_type"]
     include_b_h = setup["include_b_h"]
     fluxtype = setup["fluxtype"]
+    bcs = setup["bcs"]
     u_exact = get_exact_solution(setup)
     #
     invM = setup["invM_global"][1:compdim, 1:compdim]
@@ -41,6 +42,9 @@ function ARS_optimized(setup, RHS_mat, Tableau)
     elseif fluxtype == "central"
         Drho = invM*setup["Dc"]
         Dg = invM*setup["Dc"]
+        if bcs == "reflecting"
+            Dg = -invM*(setup["Dc"]') # adding reflecting boundary term
+        end
     end
     #u_exact = 0
     Nt = length(t_d)
@@ -98,9 +102,11 @@ function ARS_optimized(setup, RHS_mat, Tableau)
 end
 
 
-function ImEx(setup, RHS_mat, Tableau; only_explicit = false, optimized_ARS = false)
+function ImEx(setup, RHS_mat, Tableau; only_explicit = false, optimized_ARS = false, precond = false)
     eq_type = setup["eq_type"]
     T = setup["T"]
+    Sc = setup["Sc"]
+    diagdx = setup["diagdx"]
     # matrices
     A_ex = Tableau["A_ex"]
     A_im = Tableau["A_im"]
@@ -114,6 +120,14 @@ function ImEx(setup, RHS_mat, Tableau; only_explicit = false, optimized_ARS = fa
     # This implementation is pseudo ImEx, as the kinetic model can be solved explicit
     ex_RHS_mat = setup["ex_RHS_mat"]
     im_RHS_mat = setup["im_RHS_mat"]
+    if precond == true
+        if eq_type == "heat"
+            RHS_mat_precond_rho = setup["RHS_mat_precond_rho"]
+            RHS_mat_precond_j = setup["RHS_mat_precond_j"]
+        elseif eq_type in ["telegraph", "transport"]
+            RHS_mat_precond = setup["RHS_mat_precond"]
+        end
+    end
     # Instead of Nx, use the following notation (where dim = Nx for system, compdim = Nx for scalar equations)
         if setup["eq_type"] in ["heat", "transport"]
             dim = size(ex_RHS_mat/2)[1]
@@ -142,8 +156,38 @@ function ImEx(setup, RHS_mat, Tableau; only_explicit = false, optimized_ARS = fa
                 if it == 1
                     u_sol[:, it] = u0[:, it]
                 else
-                    dt = (t_d[it]-t_d[it-1])
-                    u_sol[:, it] = (I-dt*RHS_mat)\u_sol[:,it - 1]
+                    if precond == false
+                        dt = (t_d[it]-t_d[it-1])
+                        u_sol[:, it] = (I-dt*RHS_mat)\u_sol[:,it - 1]
+                        if it == 2
+                            println("Konditioniszahl:")
+                            display(calc_op_norm(setup, I-dt*RHS_mat)*calc_op_norm(setup, inv(I-dt*RHS_mat)))
+                            #display(cond(I-dt*RHS_mat))
+                        end
+                    else
+                        dt = (t_d[it]-t_d[it-1])
+                        if eq_type == "heat"
+                            C = [diagdx -dt*RHS_mat_precond_rho ;
+                                    -RHS_mat_precond_j diagdx]
+                            u_sol[:, it] = (C\([diagdx * u_sol[:,it - 1]; zeros(T, compdim)]))[1:length(u_sol[:,it - 1])]
+                            if it == 2
+                                println("Konditioniszahl:")
+                                display(calc_op_norm(setup, C)*calc_op_norm(setup, inv(C)))
+                                #display(cond(C))
+                            end
+                        else
+                            u_sol[:, it] = (diagdx-dt*RHS_mat_precond)\diagdx*u_sol[:,it - 1]
+                            if it == 2
+                                println("Konditioniszahl:")
+                                display(diagdx-dt*RHS_mat_precond)
+                                display(inv(diagdx-dt*RHS_mat_precond))
+                                display(calc_op_norm(setup, diagdx-dt*RHS_mat_precond)*calc_op_norm(setup, inv(diagdx-dt*RHS_mat_precond)))
+                                #display(calc_op_norm(setup, diagdx-dt*RHS_mat_precond))
+                                #display(calc_op_norm(setup, inv(diagdx-dt*RHS_mat_precond)))
+                                display(cond(diagdx-dt*RHS_mat_precond))
+                            end
+                        end
+                    end
                 end
             end
         elseif A_im == [1/2]
@@ -151,9 +195,57 @@ function ImEx(setup, RHS_mat, Tableau; only_explicit = false, optimized_ARS = fa
                 if it == 1
                     u_sol[:, it] = u0[:, it]
                 else
-                    dt = (t_d[it]-t_d[it-1])
-                    k = (I-dt/2*RHS_mat)\u_sol[:,it - 1]
-                    u_sol[:, it] = u_sol[:,it - 1] + dt*RHS_mat*k
+                    if precond == false
+                        dt = (t_d[it]-t_d[it-1])
+                        k = (I-dt/2*RHS_mat)\u_sol[:,it - 1]
+                        u_sol[:, it] = u_sol[:,it - 1] + dt*RHS_mat*k
+                    else
+                        dt = (t_d[it]-t_d[it-1])
+                        if eq_type == "heat"
+                            C = [diagdx -sqrt(dt)/2*RHS_mat_precond_rho ;
+                                    -sqrt(dt)*RHS_mat_precond_j diagdx]
+                            k = C\([diagdx * u_sol[:,it - 1]; zeros(T, compdim)])
+                            u_sol[:, it] = u_sol[:,it - 1] + dt*RHS_mat*k[1:length(u_sol[:,it - 1])]
+                            if it == 2
+                                setupcond = deepcopy(setup)
+                                setupcond["M"] = [setup["M"] zeros(T, size(setup["M"]));
+                                                    zeros(T, size(setup["M"])) setup["M"]]
+                                println("deg=$(setup["deg"]), stabilize = $(setup["do_stabilize"])")
+                                #=
+                                println("Kondition von C:")
+                                display(calc_op_norm(setupcond, C))
+                                display(calc_op_norm(setupcond, inv(C)))
+                                #
+                                println("Kondition von RHS_mat_precond_rho:")
+                                display(calc_op_norm(setup, diagdx-dt/2*RHS_mat_precond_rho))
+                                display(calc_op_norm(setup, inv(diagdx-dt/2*RHS_mat_precond_rho)))
+                                println("Kondition von klassisch skalierter RHS:")
+                                display(calc_op_norm(setup, I-dt/2*Sc*RHS_mat_precond_rho))
+                                display(calc_op_norm(setup, inv(I-dt/2*Sc*RHS_mat_precond_rho)))
+                                =#
+                                #
+                                display(cond(C))
+                                #
+                                println("dt = $(dt)")
+                                #dt = 0.01
+                                #display(diagdx-dt/2*RHS_mat_precond_rho)
+                                println("Kondition von RHS_mat_precond_rho:")
+                                display(cond(diagdx-dt/2*RHS_mat_precond_rho))
+                                display(cond(inv(diagdx-dt/2*RHS_mat_precond_rho)))
+                                #display(RHS_mat_precond_rho)
+                                println("Kondition von klassisch skalierter RHS:")
+                                display(cond(I-dt/2*Sc*RHS_mat_precond_rho))
+                                display(cond(inv(I-dt/2*Sc*RHS_mat_precond_rho)))
+                                println("-------------------------------------------------------------------")
+                                #
+                            end
+                        else
+                            dt = (t_d[it]-t_d[it-1])
+                            k = (diagdx-dt/2*RHS_mat_precond)\diagdx*u_sol[:,it - 1]
+                            #k = (I-dt/2*RHS_mat)\u_sol[:,it - 1]
+                            u_sol[:, it] = u_sol[:,it - 1] + dt*RHS_mat*k
+                        end
+                    end
                 end
             end
         elseif A_im == [0 0; 1/2 1/2]
@@ -536,4 +628,33 @@ function get_RK_tableau(tableau_string)
         Tableau["b_im"] = [1/2, 1/2]
     end
     return Tableau
+end
+
+
+function SSPRK3(setup, RHS_mat)
+    T = setup["T"]
+    x_d = setup["x_d"]
+    a = setup["a"]
+    u0 = setup["u0"]
+    t_d = setup["t_d"]
+    u_exact = get_exact_solution(setup)
+    #u_exact = 0
+    Nt = length(t_d)
+    Nx = length(u0)
+    u_sol = zeros(T, Nx, Nt)
+    substeps = zeros(T, Nx, 3)
+    f(u,t) = f_RHS(u,t, RHS_mat, setup)
+    cRK = [0, 1, 1/2]
+    for it in range(1,Nt, step = 1)
+        if it == 1
+            u_sol[:,it] = u0[1:Nx]
+        else
+            dt = (t_d[it]-t_d[it-1])
+            substeps[:, 1] = f(u_sol[:,it - 1],t_d[it - 1] + cRK[1]*dt)
+            substeps[:, 2] = f(u_sol[:,it - 1] + dt * (substeps[:, 1]), t_d[it - 1] + cRK[2]*dt)
+            substeps[:, 3] = f(u_sol[:,it - 1] + dt * 1/4*(substeps[:, 1] + substeps[:, 2]), t_d[it - 1] + cRK[3]*dt)
+            u_sol[:,it] = u_sol[:,it - 1] + dt * (1/6*substeps[:, 1] + 1/6*substeps[:, 2] + 2/3 * substeps[:, 3])
+        end
+    end
+    return u_sol, u_exact
 end

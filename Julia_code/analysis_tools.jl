@@ -2,9 +2,13 @@
 #############################      Hilfsfunktionen         ###############################
 ##########################################################################################
 
-function construct_id_set_for_analysis(eq_type)
+function construct_id_set_for_analysis(eq_type; bcs = "periodic")
     if eq_type in ["telegraph", "telegraph_symm", "heat"]
-        id_set = (eq_type, "telsin", -pi, pi)
+        if bcs == "periodic"
+            id_set = (eq_type, "telsin", -pi, pi)
+        elseif bcs == "reflecting"
+            id_set = (eq_type, "telsin", -pi/2, pi/2)
+        end
     elseif eq_type in ["wave", "wave_symm", "transport"]
         id_set = (eq_type, "sin", 0, 1)
     end
@@ -44,11 +48,10 @@ function convergence_test(;
     exprange = [3,8], Tmax = 3.0, deg = 1, CFL_prefac = 0.5, basis_type = GaussLegendre,
     fluxtype = "altlr", J1_type = "upwind_diss_symm", J1_type_A = "upwind_diss_symm",
     cut_cells = [], do_stabilize = true, fix_eta = true, c = 0.4, include_b_h = true,
-    TMM = SSPRK3
-                        )
+    TMM = SSPRK3,
+    bcs = "periodic")
     if !(eq_type == "heat") deriv_fac = 0 else deriv_fac = 1 end
-    id_set = construct_id_set_for_analysis(eq_type)
-
+    id_set = construct_id_set_for_analysis(eq_type, bcs = bcs)
     n_comp = get_n_comp(eq_type)
     steps = 2 .^range(exprange[1],exprange[2])
     errors = zeros(T, length(steps)*n_comp)
@@ -68,10 +71,14 @@ function convergence_test(;
                 CFL = CFL_prefac/(2*deg+1)/(step)  # one factor of 1/N gets included in setup_problem_eq -> this is dt~1/dx^2
             end
         end
-        problem = setup_problem_eq(id_set[1], id_set[2], id_set[3], id_set[4], step, Tmax = Tmax, a = a, CFL = CFL, bcs = "periodic", epsilon = epsilon);
+        problem = setup_problem_eq(id_set[1], id_set[2], id_set[3], id_set[4], step, Tmax = Tmax, a = a, CFL = CFL, bcs = bcs, epsilon = epsilon);
         cut_cells = take_care_of_cut_cells(step, cut_cells)
         for (i_cc, cut_cell) in enumerate(cut_cells)
-            problem = include_cut_cell(problem, cut_cell, 3*i_cc)
+            if bcs == "reflecting" # assign first small cell to the left boundary cell
+                problem = include_cut_cell(problem, cut_cell, 3*i_cc-2)
+            else
+                problem = include_cut_cell(problem, cut_cell, 3*i_cc)
+            end
         end
 
         RHS_mat, problem, SBP_storage = DGsemidiscretization_DoD_telegraph(problem, deg, basis_type, do_stabilize = do_stabilize, fix_eta = fix_eta,
@@ -268,7 +275,7 @@ function asymptotic_error(;
     cut_cells = [], fix_eta = true, c = 0.4, include_b_h = true,
     TMM = SSPRK3,
     CFL_type = "eps/dx^2",
-                        )
+    bcs = "periodic")
     epsilons = (1/2) .^(1:epsilon_refinement)
     errors = zeros(T, epsilon_refinement)
     sol_telegraph = Vector{Matrix{T}}()
@@ -282,16 +289,25 @@ function asymptotic_error(;
             CFL = CFL_prefac/(2*deg+1)/N
         end
         # calulation of telegraph equation
-        problem = setup_problem_eq("telegraph", "telegraph_well_prep" , -pi, pi, N, Tmax = Tmax, a = a, CFL = CFL, bcs = "periodic", epsilon = eps, T = T,);
+        if bcs == "reflecting"
+            id_set = ("telegraph", "telegraph_well_prep", -pi/2, pi/2)
+        elseif bcs == "periodic"
+            id_set = ("telegraph", "telegraph_well_prep" , -pi, pi)
+        end
+        problem = setup_problem_eq(id_set[1], id_set[2], id_set[3], id_set[4], N, Tmax = Tmax, a = a, CFL = CFL, bcs = bcs, epsilon = eps, T = T,);
+        display(problem)
         cut_cells = take_care_of_cut_cells(N, cut_cells)
         for (i_cc, cut_cell) in enumerate(cut_cells)
-            problem = include_cut_cell(problem, cut_cell, 3*i_cc)
+            if bcs == "reflecting" # assign first small cell to the left boundary cell
+                problem = include_cut_cell(problem, cut_cell, 3*i_cc-2)
+            else
+                problem = include_cut_cell(problem, cut_cell, 3*i_cc)
+            end
         end
-""
+
         RHS_mat, problem, SBP_storage = DGsemidiscretization_DoD_telegraph(problem, deg, basis_type, do_stabilize = true, fix_eta = fix_eta,
                                                                     c = c, fluxtype = fluxtype, include_b_h = include_b_h, ext_test_func = true,
                                                                     J1_type = J1_type, J1_type_A = J1_type_A);
-
         if typeof(TMM) == String
             Tableau = get_RK_tableau(TMM)
             push!(sol_telegraph, ImEx(problem, RHS_mat, Tableau, only_explicit = false, optimized_ARS = true)[1])
@@ -300,10 +316,14 @@ function asymptotic_error(;
         end
 
         # calculation of heat equation
-        problem = setup_problem_eq("heat", "telsin" , -pi, pi, N, Tmax = Tmax, a = a, CFL = CFL, bcs = "periodic", epsilon = eps, T = T);
+        problem = setup_problem_eq("heat", "telsin" , id_set[3], id_set[4], N, Tmax = Tmax, a = a, CFL = CFL, bcs = bcs, epsilon = eps, T = T);
         cut_cells = take_care_of_cut_cells(N, cut_cells)
         for (i_cc, cut_cell) in enumerate(cut_cells)
-            problem = include_cut_cell(problem, cut_cell, 3*i_cc)
+            if bcs == "reflecting" # assign first small cell to the left boundary cell
+                problem = include_cut_cell(problem, cut_cell, 3*i_cc-2)
+            else
+                problem = include_cut_cell(problem, cut_cell, 3*i_cc)
+            end
         end
 
         RHS_mat, problem, SBP_storage = DGsemidiscretization_DoD_telegraph(problem, deg, basis_type, do_stabilize = true, fix_eta = fix_eta,
